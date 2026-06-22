@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Box Breathing</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --text: #e0e0e0;
+    --muted: #7a7a9a;
+    --accent: #6c63ff;
+    --inhale: #4fc3f7;
+    --hold: #ab47bc;
+    --exhale: #66bb6a;
+    --rest: #ffca28;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* ── Layout ─────────────────────────────────── */
+  .app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1rem, 4vh, 2.5rem);
+    width: 100%;
+    max-width: 420px;
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Breathing Ring ─────────────────────────── */
+  .breath-container {
+    position: relative;
+    width: clamp(200px, 50vmin, 280px);
+    height: clamp(200px, 50vmin, 280px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Outer glow ring */
+  .breath-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid var(--muted);
+    opacity: 0.25;
+    transition: border-color 0.6s, opacity 0.6s;
+  }
+
+  /* Animated breathing circle */
+  .breath-circle {
+    position: absolute;
+    width: 12%;
+    height: 12%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--inhale) 0%, transparent 100%);
+    transition: transform 4s linear, background 0.6s;
+    transform: scale(8.5);
+  }
+
+  /* Progress arc (SVG) */
+  .progress-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .progress-track {
+    fill: none;
+    stroke: var(--surface);
+    stroke-width: 4;
+  }
+
+  .progress-fill {
+    fill: none;
+    stroke: var(--inhale);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke 0.6s;
+  }
+
+  /* Phase info below circle */
+  .phase-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .phase-name {
+    font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.4s;
+  }
+
+  .phase-timer {
+    font-size: clamp(2.2rem, 7vw, 3rem);
+    font-weight: 200;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+
+  /* ── Stats Row ──────────────────────────────── */
+  .stats {
+    display: flex;
+    gap: clamp(1.5rem, 6vw, 3rem);
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    color: var(--muted);
+  }
+
+  .stats span { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 500; }
+
+  /* ── Phase dots ─────────────────────────────── */
+  .phase-dots {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .phase-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--muted);
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  }
+
+  .phase-dot.active {
+    transform: scale(1.35);
+    border-color: transparent;
+  }
+
+  /* ── Buttons ────────────────────────────────── */
+  .controls {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .btn {
+    padding: 0.7rem 2rem;
+    border: none;
+    border-radius: 2rem;
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.3s;
+    min-width: 120px;
+  }
+
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.3; pointer-events: none; }
+
+  .btn-start {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-reset {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--muted);
+  }
+
+  /* ── Idle overlay ───────────────────────────── */
+  .idle-text {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    color: var(--muted);
+    font-style: italic;
+    height: 1.4em;
+    transition: opacity 0.4s;
+  }
+
+  /* ── Color states ───────────────────────────── */
+  .app[data-phase="idle"] .breath-circle { transform: scale(0.8); }
+
+  .app[data-phase="inhale"] .breath-circle { transform: scale(8.5); background: radial-gradient(circle, var(--inhale) 0%, transparent 100%); }
+  .app[data-phase="inhale"] .breath-ring { border-color: var(--inhale); opacity: 0.5; }
+  .app[data-phase="inhale"] .progress-fill { stroke: var(--inhale); }
+  .app[data-phase="inhale"] .phase-name { color: var(--inhale); }
+  .app[data-phase="inhale"] .phase-dot.active { background: var(--inhale); }
+
+  .app[data-phase="hold-in"] .breath-circle { transform: scale(8.5); background: radial-gradient(circle, var(--hold) 0%, transparent 100%); }
+  .app[data-phase="hold-in"] .breath-ring { border-color: var(--hold); opacity: 0.5; }
+  .app[data-phase="hold-in"] .progress-fill { stroke: var(--hold); }
+  .app[data-phase="hold-in"] .phase-name { color: var(--hold); }
+  .app[data-phase="hold-in"] .phase-dot.active { background: var(--hold); }
+
+  .app[data-phase="exhale"] .breath-circle { transform: scale(0.8); background: radial-gradient(circle, var(--exhale) 0%, transparent 100%); }
+  .app[data-phase="exhale"] .breath-ring { border-color: var(--exhale); opacity: 0.5; }
+  .app[data-phase="exhale"] .progress-fill { stroke: var(--exhale); }
+  .app[data-phase="exhale"] .phase-name { color: var(--exhale); }
+  .app[data-phase="exhale"] .phase-dot.active { background: var(--exhale); }
+
+  .app[data-phase="hold-out"] .breath-circle { transform: scale(0.8); background: radial-gradient(circle, var(--rest) 0%, transparent 100%); }
+  .app[data-phase="hold-out"] .breath-ring { border-color: var(--rest); opacity: 0.5; }
+  .app[data-phase="hold-out"] .progress-fill { stroke: var(--rest); }
+  .app[data-phase="hold-out"] .phase-name { color: var(--rest); }
+  .app[data-phase="hold-out"] .phase-dot.active { background: var(--rest); }
+</style>
+</head>
+<body>
+<div class="app" id="app" data-phase="idle">
+  <h1>Box Breathing</h1>
+
+  <div class="breath-container">
+    <svg class="progress-svg" viewBox="0 0 280 280">
+      <circle class="progress-track" cx="140" cy="140" r="134" />
+      <circle class="progress-fill" id="progressArc" cx="140" cy="140" r="134"
+              stroke-dasharray="842" stroke-dashoffset="842" />
+    </svg>
+    <div class="breath-ring"></div>
+    <div class="breath-circle" id="breathCircle"></div>
+  </div>
+
+  <div class="phase-info">
+    <div class="phase-name" id="phaseName">Ready</div>
+    <div class="phase-timer" id="phaseTimer">5:00</div>
+  </div>
+
+  <div class="phase-dots">
+    <div class="phase-dot" data-dot="inhale"></div>
+    <div class="phase-dot" data-dot="hold-in"></div>
+    <div class="phase-dot" data-dot="exhale"></div>
+    <div class="phase-dot" data-dot="hold-out"></div>
+  </div>
+
+  <div class="stats">
+    <div>Cycle: <span id="cycleCount">0</span> / <span id="cycleTotal">18</span></div>
+    <div>Time: <span id="timeRemaining">5:00</span></div>
+  </div>
+
+  <div class="idle-text" id="idleText">Press Start to begin</div>
+
+  <div class="controls">
+    <button class="btn btn-start" id="btnStart">Start</button>
+    <button class="btn btn-reset" id="btnReset" disabled>Reset</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── Config ──────────────────────────────────────
+  const PHASES = [
+    { id: 'inhale',   label: 'Inhale', duration: 4 },
+    { id: 'hold-in',  label: 'Hold',   duration: 4 },
+    { id: 'exhale',   label: 'Exhale', duration: 4 },
+    { id: 'hold-out', label: 'Hold',   duration: 4 },
+  ];
+  const CYCLE_DURATION = PHASES.reduce((s, p) => s + p.duration, 0); // 16s
+  const TOTAL_DURATION = 300; // 5 minutes
+  const TOTAL_CYCLES = Math.floor(TOTAL_DURATION / CYCLE_DURATION); // 18
+
+  // ── DOM refs ────────────────────────────────────
+  const app          = document.getElementById('app');
+  const breathCircle = document.getElementById('breathCircle');
+  const progressArc  = document.getElementById('progressArc');
+  const phaseName    = document.getElementById('phaseName');
+  const phaseTimer   = document.getElementById('phaseTimer');
+  const cycleCount   = document.getElementById('cycleCount');
+  const cycleTotal   = document.getElementById('cycleTotal');
+  const timeRemaining= document.getElementById('timeRemaining');
+  const idleText     = document.getElementById('idleText');
+  const btnStart     = document.getElementById('btnStart');
+  const btnReset     = document.getElementById('btnReset');
+  const dots         = document.querySelectorAll('.phase-dot');
+
+  const ARC_LENGTH = 2 * Math.PI * 134; // ~842
+
+  // ── State ───────────────────────────────────────
+  let running = false;
+  let phaseIndex = 0;
+  let cycle = 0;
+  let phaseStart = 0;
+  let sessionStart = 0;
+  let animFrameId = null;
+
+  // ── Audio (Web Audio API) ───────────────────────
+  let audioCtx = null;
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playTone(freq = 523.25, duration = 0.18) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  // Slightly different warm tones per phase
+  const PHASE_TONES = {
+    'inhale':   523.25, // C5
+    'hold-in':  440.00, // A4
+    'exhale':   392.00, // G4
+    'hold-out':  349.23, // F4
+  };
+
+  // ── Formatting ──────────────────────────────────
+  function formatTime(ms) {
+    const totalSec = Math.ceil(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  // ── UI update ───────────────────────────────────
+  function setPhase(idx) {
+    phaseIndex = idx;
+    const phase = PHASES[idx];
+    app.dataset.phase = phase.id;
+    phaseName.textContent = phase.label;
+
+    // Active dot
+    dots.forEach(d => d.classList.toggle('active', d.dataset.dot === phase.id));
+
+    // Tone
+    playTone(PHASE_TONES[phase.id], 0.2);
+  }
+
+  function updateProgress(phaseElapsed, phaseDuration, totalElapsed) {
+    // Arc: fraction of current phase elapsed
+    const frac = Math.min(phaseElapsed / phaseDuration, 1);
+    const offset = ARC_LENGTH * (1 - frac);
+    progressArc.style.strokeDashoffset = offset;
+
+    // Timer display (phase countdown)
+    const phaseSecLeft = Math.max(0, Math.ceil(phaseDuration - phaseElapsed));
+    phaseTimer.textContent = phaseSecLeft + 's';
+
+    // Remaining total time
+    const remaining = Math.max(0, TOTAL_DURATION * 1000 - totalElapsed);
+    timeRemaining.textContent = formatTime(remaining);
+  }
+
+  // ── Tick loop ───────────────────────────────────
+  function tick() {
+    if (!running) return;
+
+    const now = performance.now();
+    const phaseElapsed = (now - phaseStart) / 1000; // seconds
+    const currentPhase = PHASES[phaseIndex];
+    const totalElapsed = now - sessionStart; // ms since session started
+
+    updateProgress(phaseElapsed, currentPhase.duration, totalElapsed);
+
+    // Phase transition
+    if (phaseElapsed >= currentPhase.duration) {
+      const nextIdx = (phaseIndex + 1) % PHASES.length;
+
+      // Completed a full cycle?
+      if (nextIdx === 0 && (TOTAL_DURATION * 1000 - totalElapsed) >= CYCLE_DURATION * 1000) {
+        cycle++;
+        cycleCount.textContent = cycle;
+      }
+
+      // Check if total time exceeded
+      if (totalElapsed >= TOTAL_DURATION * 1000) {
+        finish();
+        return;
+      }
+
+      phaseStart = now;
+      setPhase(nextIdx);
+    }
+
+    animFrameId = requestAnimationFrame(tick);
+  }
+
+  // ── Start / Reset / Finish ─────────────────────
+  function start() {
+    ensureAudio();
+    running = true;
+    cycle = 1;
+    cycleCount.textContent = '1';
+    sessionStart = performance.now();
+    phaseStart = sessionStart;
+
+    btnStart.disabled = true;
+    btnReset.disabled = false;
+    idleText.style.opacity = '0';
+
+    setPhase(0);
+    animFrameId = requestAnimationFrame(tick);
+  }
+
+  function finish() {
+    running = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+
+    phaseName.textContent = 'Done';
+    phaseTimer.textContent = '0s';
+    timeRemaining.textContent = '0:00';
+    cycleCount.textContent = cycle;
+
+    // Full arc done
+    progressArc.style.strokeDashoffset = 0;
+
+    btnStart.disabled = true;
+    btnReset.disabled = false;
+    idleText.style.opacity = '1';
+    idleText.textContent = 'Session complete!';
+    app.dataset.phase = 'idle';
+    dots.forEach(d => d.classList.remove('active'));
+  }
+
+  function reset() {
+    running = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+
+    phaseIndex = 0;
+    cycle = 0;
+
+    phaseName.textContent = 'Ready';
+    phaseTimer.textContent = formatTime(TOTAL_DURATION * 1000);
+    timeRemaining.textContent = formatTime(TOTAL_DURATION * 1000);
+    cycleCount.textContent = '0';
+
+    progressArc.style.transition = 'none';
+    progressArc.style.strokeDashoffset = ARC_LENGTH;
+    requestAnimationFrame(() => { progressArc.style.transition = ''; });
+
+    btnStart.disabled = false;
+    btnReset.disabled = true;
+    idleText.style.opacity = '1';
+    idleText.textContent = 'Press Start to begin';
+    app.dataset.phase = 'idle';
+    dots.forEach(d => d.classList.remove('active'));
+  }
+
+  // ── Init ────────────────────────────────────────
+  btnStart.addEventListener('click', start);
+  btnReset.addEventListener('click', reset);
+
+  cycleTotal.textContent = TOTAL_CYCLES;
+  phaseTimer.textContent = formatTime(TOTAL_DURATION * 1000);
+})();
+</script>
+</body>
+</html>
