@@ -1,0 +1,371 @@
+/* ═══════════════════════════════════════════════════════
+   Reset + Theme
+   ═══════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --text: #e0e0e0;
+  --muted: #7a7a9a;
+  --accent: #6c63ff;
+  --inhale: #4fc3f7;
+  --hold: #ab47bc;
+  --exhale: #66bb6a;
+  --rest: #ffca28;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   App Shell
+   ═══════════════════════════════════════════════════════ */
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 4vh, 2.5rem);
+  width: 100%;
+  max-width: 420px;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Breathing Ring
+   ═══════════════════════════════════════════════════════ */
+.breath-container {
+  position: relative;
+  width: clamp(200px, 50vmin, 280px);
+  height: clamp(200px, 50vmin, 280px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.breath-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--muted);
+  opacity: 0.25;
+  transition: border-color 0.6s, opacity 0.6s;
+}
+
+.breath-circle {
+  position: absolute;
+  width: 12%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--inhale) 0%, transparent 100%);
+  transition: transform 4s linear, background 0.6s;
+  transform: scale(8.5);
+}
+
+/* Progress arc */
+.progress-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-track {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 4;
+}
+
+.progress-fill {
+  fill: none;
+  stroke: var(--inhale);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke 0.6s;
+}
+
+/* Phase info */
+.phase-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.phase-name {
+  font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.4s;
+}
+
+.phase-timer {
+  font-size: clamp(2.2rem, 7vw, 3rem);
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Stats
+   ═══════════════════════════════════════════════════════ */
+.stats {
+  display: flex;
+  gap: clamp(1.5rem, 6vw, 3rem);
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: var(--muted);
+}
+
+.stats span {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.streak-stats {
+  display: flex;
+  gap: clamp(1rem, 4vw, 2rem);
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+  color: var(--muted);
+}
+
+.streak-stats .streak-val {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.streak-stats .fire { color: #ffab40; }
+
+/* ═══════════════════════════════════════════════════════
+   Phase Dots
+   ═══════════════════════════════════════════════════════ */
+.phase-dots {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.phase-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--muted);
+  transition: background 0.3s, border-color 0.3s, transform 0.3s;
+}
+
+.phase-dot.active {
+  transform: scale(1.35);
+  border-color: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Controls
+   ═══════════════════════════════════════════════════════ */
+.controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.7rem 2rem;
+  border: none;
+  border-radius: 2rem;
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.3s;
+  min-width: 120px;
+}
+
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.3; pointer-events: none; }
+
+.btn-start {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-reset {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--muted);
+}
+
+.idle-text {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: var(--muted);
+  font-style: italic;
+  height: 1.4em;
+  transition: opacity 0.4s;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Phase Colors
+   ═══════════════════════════════════════════════════════ */
+.app[data-phase="idle"] .breath-circle { transform: scale(0.8); }
+
+.app[data-phase="inhale"] .breath-circle { transform: scale(8.5); background: radial-gradient(circle, var(--inhale) 0%, transparent 100%); }
+.app[data-phase="inhale"] .breath-ring { border-color: var(--inhale); opacity: 0.5; }
+.app[data-phase="inhale"] .progress-fill { stroke: var(--inhale); }
+.app[data-phase="inhale"] .phase-name { color: var(--inhale); }
+.app[data-phase="inhale"] .phase-dot.active { background: var(--inhale); }
+
+.app[data-phase="hold-in"] .breath-circle { transform: scale(8.5); background: radial-gradient(circle, var(--hold) 0%, transparent 100%); }
+.app[data-phase="hold-in"] .breath-ring { border-color: var(--hold); opacity: 0.5; }
+.app[data-phase="hold-in"] .progress-fill { stroke: var(--hold); }
+.app[data-phase="hold-in"] .phase-name { color: var(--hold); }
+.app[data-phase="hold-in"] .phase-dot.active { background: var(--hold); }
+
+.app[data-phase="exhale"] .breath-circle { transform: scale(0.8); background: radial-gradient(circle, var(--exhale) 0%, transparent 100%); }
+.app[data-phase="exhale"] .breath-ring { border-color: var(--exhale); opacity: 0.5; }
+.app[data-phase="exhale"] .progress-fill { stroke: var(--exhale); }
+.app[data-phase="exhale"] .phase-name { color: var(--exhale); }
+.app[data-phase="exhale"] .phase-dot.active { background: var(--exhale); }
+
+.app[data-phase="hold-out"] .breath-circle { transform: scale(0.8); background: radial-gradient(circle, var(--rest) 0%, transparent 100%); }
+.app[data-phase="hold-out"] .breath-ring { border-color: var(--rest); opacity: 0.5; }
+.app[data-phase="hold-out"] .progress-fill { stroke: var(--rest); }
+.app[data-phase="hold-out"] .phase-name { color: var(--rest); }
+.app[data-phase="hold-out"] .phase-dot.active { background: var(--rest); }
+
+/* ═══════════════════════════════════════════════════════
+   Overlays (Welcome, Banners, Toasts)
+   ═══════════════════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.5rem;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.overlay h2 {
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: center;
+}
+
+.overlay p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.name-input {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 2rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-align: center;
+  outline: none;
+  width: 220px;
+  transition: border-color 0.3s;
+}
+
+.name-input:focus { border-color: var(--accent); }
+.name-input::placeholder { color: var(--muted); opacity: 0.6; }
+
+.btn-enter {
+  padding: 0.7rem 2.5rem;
+  border: none;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.3s;
+  min-width: 140px;
+}
+
+.btn-enter:active { transform: scale(0.96); }
+.btn-enter:disabled { opacity: 0.3; pointer-events: none; }
+
+/* Streak banner */
+.streak-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  font-size: 0.95rem;
+  z-index: 50;
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.streak-banner.visible { transform: translateY(0); }
+
+.streak-banner.warning {
+  background: #3e2723;
+  color: #ffab40;
+  border-bottom: 1px solid #ffab4033;
+}
+
+.streak-banner.reset {
+  background: #1a1a2e;
+  color: #ef9a9a;
+  border-bottom: 1px solid #ef9a9a33;
+}
+
+.streak-banner.active {
+  background: #1b3a2a;
+  color: #a5d6a7;
+  border-bottom: 1px solid #a5d6a733;
+}
+
+/* Celebration toast */
+.celebration {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 1rem;
+  text-align: center;
+  font-size: 1rem;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  background: #1b3a2a;
+  color: #a5d6a7;
+  border-top: 1px solid #a5d6a733;
+}
+
+.celebration.visible { transform: translateY(0); }
