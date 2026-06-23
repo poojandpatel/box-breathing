@@ -117,28 +117,25 @@ const UI = (() => {
   }
 
   // ── Rotate Warning (mobile landscape) ────────────
-  // screen.orientation.angle works on all modern mobile browsers including iOS Safari.
+  // Uses matchMedia('(orientation: landscape)') which works in iOS Safari.
 
   function checkRotateWarning() {
     const rotate = el('rotateWarning');
     if (!rotate) return;
 
     const isMobile = Math.min(screen.width, screen.height) <= 800;
-    const angle = screen.orientation ? screen.orientation.angle : 0;
-    const isLandscape = angle === 90 || angle === -90;
+    const mq = window.matchMedia('(orientation: landscape)');
+    const isLandscape = mq.matches;
 
-    if (isMobile && isLandscape) {
-      rotate.classList.add('visible');
-    } else {
-      rotate.classList.remove('visible');
-    }
+    console.log('[rotate] mobile:', isMobile, 'landscape:', isLandscape, 'swxsh:', screen.width + 'x' + screen.height, 'inner:', window.innerWidth + 'x' + window.innerHeight);
+
+    rotate.classList.toggle('visible', isMobile && isLandscape);
   }
 
   function initRotateWarning() {
     checkRotateWarning();
-    window.addEventListener('orientationchange', () => {
-      setTimeout(checkRotateWarning, 150);
-    });
+    window.matchMedia('(orientation: landscape)').addEventListener('change', checkRotateWarning);
+    window.addEventListener('orientationchange', () => setTimeout(checkRotateWarning, 150));
   }
 
   // ── Returning User Check ─────────────────────────
