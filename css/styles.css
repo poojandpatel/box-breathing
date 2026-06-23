@@ -316,7 +316,7 @@ h1 {
 .rotate-warning {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: var(--bg);
   z-index: 200;
   flex-direction: column;
@@ -327,7 +327,7 @@ h1 {
 }
 
 .rotate-warning.visible {
-  display: flex;
+  display: flex !important;
 }
 
 .rotate-warning .rotate-icon {
