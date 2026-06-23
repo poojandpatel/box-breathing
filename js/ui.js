@@ -84,6 +84,29 @@ const UI = (() => {
     if (total) total.textContent = profile.totalSessions || 0;
   }
 
+  // ── Breathing Tip ────────────────────────────────
+  // Shows on each load unless dismissed. Persists dismissal in session.
+
+  let tipDismissed = false;
+
+  function initTip() {
+    const tip = el('breathingTip');
+    const dismissBtn = el('tipDismiss');
+    if (!tip) return;
+
+    if (tipDismissed) {
+      tip.classList.add('hidden');
+      return;
+    }
+
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', () => {
+        tipDismissed = true;
+        tip.classList.add('hidden');
+      });
+    }
+  }
+
   // ── Returning User Check ─────────────────────────
   // On app open: load profile, render stats, show banner if needed.
   // Returns true if user profile exists.
@@ -113,5 +136,6 @@ const UI = (() => {
     showCelebration,
     renderStats,
     checkReturning,
+    initTip,
   };
 })();

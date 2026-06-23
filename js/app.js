@@ -35,6 +35,7 @@
     cycleTotal:   $('cycleTotal'),
     timeRemaining: $('timeRemaining'),
     idleText:     $('idleText'),
+    breathingTip: $('breathingTip'),
     btnStart:     $('btnStart'),
     btnReset:     $('btnReset'),
     dots:         document.querySelectorAll('.phase-dot'),
@@ -189,6 +190,7 @@
     dom.btnStart.disabled = true;
     dom.btnReset.disabled = false;
     dom.idleText.style.opacity = '0';
+    dom.breathingTip.classList.add('hidden');
 
     setPhase(0);
     animFrameId = requestAnimationFrame(tick);
@@ -241,6 +243,9 @@
     dom.idleText.textContent = 'Press Start to begin';
     dom.app.dataset.phase = 'idle';
     dom.dots.forEach((d) => d.classList.remove('active'));
+
+    // Restore tip if not dismissed
+    UI.initTip();
   }
 
   // ── Init ────────────────────────────────────────
@@ -251,6 +256,9 @@
 
     dom.cycleTotal.textContent = TOTAL_CYCLES;
     dom.phaseTimer.textContent = formatTime(TOTAL_DURATION * 1000);
+
+    // Breathing posture tip
+    UI.initTip();
 
     // First-time vs returning user
     if (!UI.checkReturning()) {
