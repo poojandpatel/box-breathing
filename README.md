@@ -25,6 +25,9 @@ Open `index.html` in any browser — no build step, no server required.
 - **Streak tracking** — daily sessions build a streak, missed days show a warning
 - **Celebration toasts** — milestone messages on streak milestones (7, 30, etc.)
 - **Zero friction** — just enter your name, no email or account needed
+- **Personalized greetings** — "Welcome, {name}" on first visit, "Welcome back, {name}" on return
+- **Diaphragmatic breathing tip** — posture guidance on load (lie on back, knees bent, hand on stomach)
+- **Portrait orientation lock** — full-screen rotate warning on mobile landscape
 - Fully responsive — works on phones, tablets, and desktops
 - Single HTML file, no dependencies, no build step
 - Data stored in localStorage (per-device)
