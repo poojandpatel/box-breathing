@@ -117,24 +117,24 @@ const UI = (() => {
   }
 
   // ── Rotate Warning (mobile landscape) ────────────
-  // Uses matchMedia('(orientation: landscape)') which works in iOS Safari.
+  // Uses window.innerWidth (works in Safari device simulation and on real mobile).
+  // screen.width reports the physical display — useless on desktop simulators.
 
   function checkRotateWarning() {
     const rotate = el('rotateWarning');
     if (!rotate) return;
 
-    const isMobile = Math.min(screen.width, screen.height) <= 800;
-    const mq = window.matchMedia('(orientation: landscape)');
-    const isLandscape = mq.matches;
-
-    console.log('[rotate] mobile:', isMobile, 'landscape:', isLandscape, 'swxsh:', screen.width + 'x' + screen.height, 'inner:', window.innerWidth + 'x' + window.innerHeight);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const isMobile = w <= 1024;
+    const isLandscape = w > h;
 
     rotate.classList.toggle('visible', isMobile && isLandscape);
   }
 
   function initRotateWarning() {
     checkRotateWarning();
-    window.matchMedia('(orientation: landscape)').addEventListener('change', checkRotateWarning);
+    window.addEventListener('resize', checkRotateWarning);
     window.addEventListener('orientationchange', () => setTimeout(checkRotateWarning, 150));
   }
 
