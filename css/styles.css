@@ -326,6 +326,10 @@ h1 {
   color: var(--muted);
 }
 
+.rotate-warning.visible {
+  display: flex;
+}
+
 .rotate-warning .rotate-icon {
   animation: rotate-prompt 2s ease-in-out infinite;
 }
@@ -338,13 +342,6 @@ h1 {
 @keyframes rotate-prompt {
   0%, 100% { transform: rotate(0deg); }
   50% { transform: rotate(90deg); }
-}
-
-/* Show only on mobile in landscape */
-@media (max-width: 768px) and (orientation: landscape) {
-  .rotate-warning {
-    display: flex;
-  }
 }
 
 /* ═══════════════════════════════════════════════════════

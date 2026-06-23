@@ -257,6 +257,9 @@
     dom.cycleTotal.textContent = TOTAL_CYCLES;
     dom.phaseTimer.textContent = formatTime(TOTAL_DURATION * 1000);
 
+    // Mobile landscape warning
+    UI.initRotateWarning();
+
     // Breathing posture tip
     UI.initTip();
 

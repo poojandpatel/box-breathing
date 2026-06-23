@@ -116,6 +116,31 @@ const UI = (() => {
     if (idleText) idleText.textContent = text;
   }
 
+  // ── Rotate Warning (mobile landscape) ────────────
+  // Uses screen.width/height which correctly report orientation on iOS.
+
+  function checkRotateWarning() {
+    const rotate = el('rotateWarning');
+    if (!rotate) return;
+
+    const isMobile = window.innerWidth <= 800 || window.innerHeight <= 800;
+    const isLandscape = screen.width > screen.height;
+
+    if (isMobile && isLandscape) {
+      rotate.classList.add('visible');
+    } else {
+      rotate.classList.remove('visible');
+    }
+  }
+
+  function initRotateWarning() {
+    checkRotateWarning();
+    window.addEventListener('resize', checkRotateWarning);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkRotateWarning, 100);
+    });
+  }
+
   // ── Returning User Check ─────────────────────────
   // On app open: load profile, render stats, show banner if needed.
   // Returns true if user profile exists.
@@ -149,6 +174,7 @@ const UI = (() => {
     renderStats,
     checkReturning,
     initTip,
+    initRotateWarning,
     setIdleText,
   };
 })();
