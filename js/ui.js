@@ -117,17 +117,27 @@ const UI = (() => {
   }
 
   // ── Rotate Warning (mobile landscape) ────────────
-  // Uses window.innerWidth (works in Safari device simulation and on real mobile).
-  // screen.width reports the physical display — useless on desktop simulators.
+  // On real iOS: innerWidth stays at portrait width, so w > h never works.
+  // screen.orientation.angle is reliable on iOS 14.1+.
+  // Fallback to matchMedia for older browsers, then inner dimensions for desktop sim.
+
+  function getOrientation() {
+    // Method 1: screen.orientation API (reliable on iOS 14.1+, Android, modern browsers)
+    if (screen.orientation && screen.orientation.angle !== undefined) {
+      return Math.abs(screen.orientation.angle) >= 90 ? 'landscape' : 'portrait';
+    }
+    // Method 2: matchMedia (works in CSS context on iOS)
+    if (window.matchMedia('(orientation: landscape)').matches) return 'landscape';
+    // Method 3: inner dimensions (only reliable on desktop Safari simulation)
+    return window.innerWidth >= window.innerHeight ? 'landscape' : 'portrait';
+  }
 
   function checkRotateWarning() {
     const rotate = el('rotateWarning');
     if (!rotate) return;
 
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const isMobile = w <= 1024;
-    const isLandscape = w > h;
+    const isMobile = Math.min(window.innerWidth, window.innerHeight) <= 1024;
+    const isLandscape = getOrientation() === 'landscape';
 
     rotate.classList.toggle('visible', isMobile && isLandscape);
   }
