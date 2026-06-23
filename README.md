@@ -20,7 +20,7 @@ Open `index.html` in any browser — no build step, no server required.
 ## Features
 
 - Animated breathing circle with phase-colored glow
-- Soft sine tones on each phase transition (Web Audio API)
+- Om (Aum) transition sound — layered harmonics at 136.1 Hz with A-U-M envelope (Web Audio API)
 - Cycle counter and countdown timer
 - **Streak tracking** — daily sessions build a streak, missed days show a warning
 - **Celebration toasts** — milestone messages on streak milestones (7, 30, etc.)

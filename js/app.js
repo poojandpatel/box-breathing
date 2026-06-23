@@ -22,15 +22,6 @@
 
   const ARC_LENGTH = 2 * Math.PI * 134; // ~842
 
-  // ── Phase tones (descending scale) ──────────────
-
-  const PHASE_TONES = {
-    'inhale':   523.25, // C5
-    'hold-in':  440.00, // A4
-    'exhale':   392.00, // G4
-    'hold-out': 349.23, // F4
-  };
-
   // ── DOM refs ────────────────────────────────────
 
   const $ = (id) => document.getElementById(id);
@@ -68,19 +59,44 @@
     if (audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  function playTone(freq = 523.25, duration = 0.18) {
+  /**
+   * Play an Om (Aum) sound for phase transitions.
+   * Uses layered oscillators to create a deep, resonant humming quality
+   * with harmonics that mimic the sacred Om mantra.
+   */
+  function playOm(duration = 1.2) {
     if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime;
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    // Om fundamental ~136.1 Hz with rich harmonic overtones
+    const harmonics = [
+      { freq: 136.10, gain: 0.18, type: 'sine' },   // Fundamental (Om)
+      { freq: 272.20, gain: 0.10, type: 'sine' },   // 2nd harmonic
+      { freq: 408.30, gain: 0.05, type: 'sine' },   // 3rd harmonic
+      { freq: 544.40, gain: 0.03, type: 'sine' },   // 4th harmonic
+      { freq: 680.50, gain: 0.015, type: 'sine' },  // 5th harmonic
+    ];
 
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.001, now);
+    // Slow attack (A) — the "A" in Aum
+    masterGain.gain.linearRampToValueAtTime(0.35, now + 0.25);
+    // Sustain (U) — hold resonance
+    masterGain.gain.setValueAtTime(0.30, now + 0.5);
+    // Release (M) — gentle fade
+    masterGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    masterGain.connect(audioCtx.destination);
+
+    harmonics.forEach(({ freq, gain: hGain, type }) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(hGain, now);
+      osc.connect(gain).connect(masterGain);
+      osc.start(now);
+      osc.stop(now + duration);
+    });
   }
 
   // ── Formatting ──────────────────────────────────
@@ -105,7 +121,7 @@
       dot.classList.toggle('active', dot.dataset.dot === phase.id)
     );
 
-    playTone(PHASE_TONES[phase.id], 0.2);
+    playOm();
   }
 
   // ── Progress Update ─────────────────────────────
