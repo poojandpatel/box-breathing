@@ -37,6 +37,8 @@ const UI = (() => {
     function done() {
       const profile = Streak.createProfile(nameInput.value);
       renderStats(profile);
+      const name = profile.name || 'Friend';
+      setIdleText(`Welcome, ${name} — press Start to begin`);
       overlay.classList.remove('visible');
       if (typeof onComplete === 'function') onComplete(profile);
     }
@@ -107,6 +109,13 @@ const UI = (() => {
     }
   }
 
+  // ── Idle Text ────────────────────────────────────
+
+  function setIdleText(text) {
+    const idleText = el('idleText');
+    if (idleText) idleText.textContent = text;
+  }
+
   // ── Returning User Check ─────────────────────────
   // On app open: load profile, render stats, show banner if needed.
   // Returns true if user profile exists.
@@ -116,6 +125,9 @@ const UI = (() => {
     if (!profile) return false;
 
     renderStats(profile);
+
+    const name = profile.name || 'Friend';
+    setIdleText(`Welcome back, ${name} — press Start to begin`);
 
     const { status, message } = Streak.checkStatus();
 
@@ -137,5 +149,6 @@ const UI = (() => {
     renderStats,
     checkReturning,
     initTip,
+    setIdleText,
   };
 })();
